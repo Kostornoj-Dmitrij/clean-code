@@ -8,10 +8,11 @@ namespace MarkdownTests;
 [TestFixture]
 public class MarkdownParser_Should
 {
+    private MarkdownParser parser = new();
     [Test]
     public void MarkdownParser_ShouldParse_WhenItalicTag()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens("Это _курсив_ текст").ToList();
 
         tokens.Should().HaveCount(3);
@@ -26,7 +27,7 @@ public class MarkdownParser_Should
     [Test]
     public void MarkdownParser_ShouldParse_WhenStrongTag()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens("Это __полужирный__ текст").ToList();
 
         tokens.Should().HaveCount(3);
@@ -42,7 +43,7 @@ public class MarkdownParser_Should
     [Test]
     public void MarkdownParser_ShouldParse_WhenHeaderTag()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens("# Заголовок").ToList();
 
         tokens.Should().HaveCount(1);
@@ -53,7 +54,7 @@ public class MarkdownParser_Should
     [Test]
     public void MarkdownParser_ShouldParse_WhenEscaping()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens(@"Экранированный \_символ\_").ToList();
 
         tokens.Should().HaveCount(1);
@@ -64,7 +65,7 @@ public class MarkdownParser_Should
     [Test]
     public void MarkdownParser_ShouldParse_WhenNestedItalicAndStrongTags()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens("Это __жирный _и курсивный_ текст__").ToList();
 
         tokens.Should().HaveCount(2);
@@ -84,7 +85,7 @@ public class MarkdownParser_Should
     [Test]
     public void MarkdownParser_ShouldParse_WhenMultipleTokensInLine()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens("Это _курсив_, а это __жирный__ текст.").ToList();
 
         tokens.Should().HaveCount(5);
@@ -103,7 +104,7 @@ public class MarkdownParser_Should
     [Test]
     public void MarkdownParser_ShouldNotParse_WhenEscapingSymbols()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens(@"Здесь сим\волы экранирования\ \должны остаться.\").ToList();
 
         tokens.Should().HaveCount(1);
@@ -114,7 +115,7 @@ public class MarkdownParser_Should
     [Test]
     public void MarkdownParser_ShouldParse_WhenEscapedTags()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens(@"\\_вот это будет выделено тегом_").ToList();
 
         tokens.Should().HaveCount(1);
@@ -125,7 +126,7 @@ public class MarkdownParser_Should
     [Test]
     public void MarkdownParser_ShouldParse_WhenNestedItalicAndStrongCorrectly()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens("Это __двойное _и одинарное_ выделение__").ToList();
 
         tokens.Should().HaveCount(2);
@@ -145,7 +146,7 @@ public class MarkdownParser_Should
     [Test]
     public void MarkdownParser_ShouldParse_WhenHeaderWithTags()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens("# Заголовок __с _разными_ символами__").ToList();
 
         tokens.Should().HaveCount(1);
@@ -165,7 +166,7 @@ public class MarkdownParser_Should
     [Test]
     public void MarkdownParser_ShouldNotParse_WhenEmptyEmphasis()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens("Если пустая _______ строка").ToList();
 
         tokens.Should().HaveCount(1);
@@ -176,7 +177,7 @@ public class MarkdownParser_Should
     [Test]
     public void MarkdownParser_ShouldParse_WhenMultipleHeaders()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens("# Заголовок 1\n# Заголовок 2").ToList();
 
         tokens.Should().HaveCount(3);
@@ -189,7 +190,7 @@ public class MarkdownParser_Should
     [Test]
     public void MarkdownParser_ShouldNotParse_WhenUnderscoresInNumbers()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens("Текст с цифрами_12_3 не должен выделяться").ToList();
 
         tokens.Should().HaveCount(1);
@@ -200,7 +201,7 @@ public class MarkdownParser_Should
     [Test]
     public void MarkdownParser_ShouldNotParse_WhenTagsInWords()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens("и в _нач_але, и в сер_еди_не").ToList();
 
         tokens.Should().HaveCount(1);
@@ -211,7 +212,7 @@ public class MarkdownParser_Should
     [Test]
     public void MarkdownParser_ShouldNotParse_WhenDifferentWords()
     {
-        var tokens = MarkdownParser
+        var tokens = parser
             .ParseTokens("Это пер_вый в_торой пример.").ToList();
 
         tokens.Should().HaveCount(1);

@@ -29,7 +29,7 @@ public class HtmlRenderer_Should
         var tokens = new List<Token>
         {
             new Token(TokenType.Text, "Это "),
-            new Token(TokenType.Emphasis, "курсив"),
+            new Token(TokenType.Emphasis, "курсив") { Children = new List<Token> { new Token(TokenType.Text, "курсив") } },
             new Token(TokenType.Text, " текст")
         };
 
@@ -41,10 +41,13 @@ public class HtmlRenderer_Should
     [Test]
     public void Render_ShoulHandleStrongTags()
     {
+        var strongToken = new Token(TokenType.Strong, string.Empty);
+        strongToken.Children.Add(new Token(TokenType.Text, "полужирный")); // Добавляем текст как дочерний токен
+
         var tokens = new List<Token>
         {
             new Token(TokenType.Text, "Это "),
-            new Token(TokenType.Strong, "полужирный"),
+            strongToken,
             new Token(TokenType.Text, " текст")
         };
 
@@ -56,10 +59,10 @@ public class HtmlRenderer_Should
     [Test]
     public void Render_ShouldHandleHeaderTags()
     {
-        var tokens = new List<Token>
-        {
-            new Token(TokenType.Header, "Заголовок")
-        };
+        var headerToken = new Token(TokenType.Header, string.Empty);
+        headerToken.Children.Add(new Token(TokenType.Text, "Заголовок"));
+
+        var tokens = new List<Token> { headerToken };
 
         var result = renderer.Render(tokens);
 
@@ -71,8 +74,9 @@ public class HtmlRenderer_Should
     {
         var headToken = new Token(TokenType.Header, string.Empty);
         var strongToken = new Token(TokenType.Strong, string.Empty);
-        var emphasisToken = new Token(TokenType.Emphasis, "курсивом" );
+        var emphasisToken = new Token(TokenType.Emphasis, string.Empty);
 
+        emphasisToken.Children.Add(new Token(TokenType.Text, "курсивом"));
         strongToken.Children.Add(new Token(TokenType.Text, "полужирным текстом с "));
         strongToken.Children.Add(emphasisToken);
         headToken.Children.Add(new Token(TokenType.Text, "заголовок с "));
@@ -99,6 +103,7 @@ public class HtmlRenderer_Should
             new Token(TokenType.Text, " текст")
         };
 
+
         var result = renderer.Render(tokens);
 
         result.Should().Be("Это <em></em> текст");
@@ -110,9 +115,9 @@ public class HtmlRenderer_Should
         var tokens = new List<Token>
         {
             new Token(TokenType.Text, "Это "),
-            new Token(TokenType.Strong, "полужирный"),
+            new Token(TokenType.Strong, "полужирный") { Children = { new Token(TokenType.Text, "полужирный") } },
             new Token(TokenType.Text, " и "),
-            new Token(TokenType.Emphasis, "курсив"),
+            new Token(TokenType.Emphasis, string.Empty) { Children = { new Token(TokenType.Text, "курсив") } },
             new Token(TokenType.Text, " текст.")
         };
 
@@ -124,8 +129,11 @@ public class HtmlRenderer_Should
     [Test]
     public void Render_ShouldHandleNestedTagsWithMultipleLevels()
     {
-        var innerStrongToken = new Token(TokenType.Strong, "полужирный заголовок");
-        var innerEmphasisToken = new Token(TokenType.Emphasis, " полужирный курсив");
+        var innerStrongToken = new Token(TokenType.Strong, string.Empty);
+        innerStrongToken.Children.Add(new Token(TokenType.Text, "полужирный заголовок"));
+
+        var innerEmphasisToken = new Token(TokenType.Emphasis, string.Empty);
+        innerEmphasisToken.Children.Add(new Token(TokenType.Text, " полужирный курсив"));
 
         var outerHeaderToken = new Token(TokenType.Header, string.Empty);
         outerHeaderToken.Children.Add(innerStrongToken);

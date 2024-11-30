@@ -1,20 +1,23 @@
-﻿using Markdown.Parsers;
+﻿using Markdown.Interfaces;
+using Markdown.Parsers;
 using Markdown.Renderers;
 
 namespace Markdown;
 
 public class Md
 {
-    private readonly HtmlRenderer renderer;
-
-    public Md()
+    private readonly IRenderer renderer;
+    private readonly IMarkdownParser parser;
+    
+    public Md(IRenderer renderer, IMarkdownParser parser)
     {
-        renderer = new HtmlRenderer();
+        this.renderer = renderer;
+        this.parser = parser;
     }
 
     public string Render(string markdownText)
     {
-        var tokens = MarkdownParser.ParseTokens(markdownText);
+        var tokens = parser.ParseTokens(markdownText);
         return renderer.Render(tokens);
     }
 }

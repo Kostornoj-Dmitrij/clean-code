@@ -2,13 +2,26 @@ using FluentAssertions;
 using Markdown;
 using NUnit.Framework;
 using System.Diagnostics;
+using Markdown.Parsers;
+using Markdown.Renderers;
 
 namespace MarkdownTests;
 
 [TestFixture]
 public class Md_Should
 {
-    private readonly Md md = new();
+    private HtmlRenderer renderer;
+    private MarkdownParser parser;
+    private Md md;
+
+    [SetUp]
+    public void Setup()
+    {
+        renderer = new HtmlRenderer();
+        parser = new MarkdownParser();
+        md = new Md(renderer, parser);
+    }
+
 
     [Test]
     public void Md_ShouldThrowArgumentNullException_WhenInputIsNull()
@@ -62,18 +75,35 @@ public class Md_Should
         "Это <strong>полужирный <em>текст</em>, <em>с курсивом</em> внутри</strong>", 
         TestName = "ItalicInStrong")]
     [TestCase("Это _курсив с __полужирным__ внутри_", 
-        "Это <em>курсив с <strong>полужирным</strong> внутри</em>", 
+        "Это <em>курсив с __полужирным__ внутри</em>", 
         TestName = "StrongInItalic")]
     [TestCase(@"Экранированный \_символ\_", 
         "Экранированный _символ_", 
         TestName = "EscapeTag")]
     [TestCase(@"\\_вот это будет выделено тегом_", 
         "<em>вот это будет выделено тегом</em>", 
-        TestName = "EscapedYourself")]
+        TestName = "EscapedYourselfOnStartOfTag")]
+    [TestCase(@"_e\\_", 
+        "<em>e</em>", 
+        TestName = "EscapedYourselfOnEndOfTag")]
     [TestCase("# Заголовок 1\n# Заголовок 2", 
         "<h1>Заголовок 1</h1>\n<h2>Заголовок 2</h2>", 
         TestName = "MultipleHeaders")]
-
+    [TestCase("# h __s _E _e_ E_ s__ _e_", 
+        "<h1>h <strong>s <em>E <em>e</em> E</em> s</strong> <em>e</em></h1>", 
+        TestName = "LotNestedTags")]
+    [TestCase("_e __s e_ s__", 
+        "_e __s e_ s__", 
+        TestName = "TagsIntersection")]
+    [TestCase("en_d._, mi__dd__le, _sta_rt", 
+        "en<em>d.</em>, mi<strong>dd</strong>le, <em>sta</em>rt", 
+        TestName = "BoundedTagsInOneWord")]
+    [TestCase("__s \n s__, _e \r\n e_", 
+        "__s \n s__, _e \r\n e_", 
+        TestName = "NewLines")]
+    [TestCase("_e __e", 
+        "_e __e", 
+        TestName = "UnPairedTags2")]
     public void Md_ShouldRender_When(string input, string expected)
     {
         var result = md.Render(input);

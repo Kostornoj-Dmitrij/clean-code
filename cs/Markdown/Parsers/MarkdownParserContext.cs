@@ -1,5 +1,7 @@
 using Markdown.Tokens;
 using System.Text;
+using Markdown.Interfaces;
+
 namespace Markdown.Parsers;
 
 public class MarkdownParseContext
@@ -10,4 +12,5 @@ public class MarkdownParseContext
     public string MarkdownText { get; set; } = "";
     public int CurrentIndex { get; set; }
     public int HeaderLevel { get; set; }
+    public required IMarkdownParser Parser { get; set; }
 }
