@@ -1,4 +1,3 @@
-using Markdown.Interfaces;
 using Markdown.Parsers;
 using Markdown.Tokens;
 

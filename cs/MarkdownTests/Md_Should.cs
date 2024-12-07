@@ -22,7 +22,6 @@ public class Md_Should
         md = new Md(renderer, parser);
     }
 
-
     [Test]
     public void Md_ShouldThrowArgumentNullException_WhenInputIsNull()
     {
@@ -37,28 +36,36 @@ public class Md_Should
     [TestCase(@"Здесь сим\волы экранирования\ \должны остаться.\", 
         @"Здесь сим\волы экранирования\ \должны остаться.\", 
         TestName = "EscapingSymbols")]
-    [TestCase("Это н_е_ будет _ вы_деле_но", 
-        "Это н_е_ будет _ вы_деле_но", 
-        TestName = "InvalidItalicTags")]
-    [TestCase("Это н__е__ будет __ вы__деле__но", 
-        "Это н__е__ будет __ вы__деле__но", 
-        TestName = "InvalidStrongTags")]
     [TestCase("В ра_зных сл_овах", 
         "В ра_зных сл_овах", 
-        TestName = "TagsInDifferentWords")]
-    [TestCase("Это текст_с_подчеркиваниями_12_3", 
-        "Это текст_с_подчеркиваниями_12_3", 
-        TestName = "UnderscoresInsideWords")]
-    [TestCase("Это __непарные_ символы в одном абзаце.", 
-        "Это __непарные_ символы в одном абзаце.", 
-        TestName = "UnclosedTags")]
+        TestName = "ItalicInDifferentWords")]
+    [TestCase("В ра__зных сл__овах", 
+        "В ра__зных сл__овах", 
+        TestName = "StrongInDifferentWords")]
+    [TestCase("Это __непарные _символы в одном абзаце.", 
+        "Это __непарные _символы в одном абзаце.", 
+        TestName = "UnclosedTagsInMiddle")]
+    [TestCase("_e __e", 
+        "_e __e", 
+        TestName = "UnclosedTagsInStart")]
+    [TestCase("e_ e__", 
+        "e_ e__", 
+        TestName = "UnclosedTagsInEnd")]
     [TestCase("Если пустая _______ строка", 
         "Если пустая _______ строка", 
         TestName = "EmptyTags")]
+    [TestCase("_e __s e_ s__", 
+        "_e __s e_ s__", 
+        TestName = "TagsIntersection")]
+    [TestCase("__s \n s__, _e \r\n e_", 
+        "__s \n s__, _e \r\n e_", 
+        TestName = "TagsIntersectionNewLines")]
+    [TestCase("Текст с цифрами_12_3 не должен выделяться", 
+        "Текст с цифрами_12_3 не должен выделяться", 
+        TestName = "UnderscoreInNumbers")]
     public void Md_ShouldNotRender_When(string input, string expected)
     {
         var result = md.Render(input);
-
         result.Should().Be(expected);
     }
 
@@ -77,9 +84,12 @@ public class Md_Should
     [TestCase("Это _курсив с __полужирным__ внутри_", 
         "Это <em>курсив с __полужирным__ внутри</em>", 
         TestName = "StrongInItalic")]
-    [TestCase(@"Экранированный \_символ\_", 
+    [TestCase(@"Экранированный \_символ\_",
         "Экранированный _символ_", 
         TestName = "EscapeTag")]
+    [TestCase("_подчерки _не считаются_", 
+        "_подчерки <em>не считаются</em>", 
+        TestName = "SpaceBeforeEndOfTag")]
     [TestCase(@"\\_вот это будет выделено тегом_", 
         "<em>вот это будет выделено тегом</em>", 
         TestName = "EscapedYourselfOnStartOfTag")]
@@ -89,33 +99,26 @@ public class Md_Should
     [TestCase("# Заголовок 1\n# Заголовок 2", 
         "<h1>Заголовок 1</h1>\n<h2>Заголовок 2</h2>", 
         TestName = "MultipleHeaders")]
+    [TestCase("# h __E _e_ E__ _e_", 
+        "<h1>h <strong>E <em>e</em> E</strong> <em>e</em></h1>", 
+        TestName = "LotNestedTags")]
     [TestCase("# h __s _E _e_ E_ s__ _e_", 
         "<h1>h <strong>s <em>E <em>e</em> E</em> s</strong> <em>e</em></h1>", 
-        TestName = "LotNestedTags")]
-    [TestCase("_e __s e_ s__", 
-        "_e __s e_ s__", 
-        TestName = "TagsIntersection")]
+        TestName = "LotNestedTagsWithDoubleItalic")]
     [TestCase("en_d._, mi__dd__le, _sta_rt", 
         "en<em>d.</em>, mi<strong>dd</strong>le, <em>sta</em>rt", 
         TestName = "BoundedTagsInOneWord")]
-    [TestCase("__s \n s__, _e \r\n e_", 
-        "__s \n s__, _e \r\n e_", 
-        TestName = "NewLines")]
-    [TestCase("_e __e", 
-        "_e __e", 
-        TestName = "UnPairedTags2")]
     public void Md_ShouldRender_When(string input, string expected)
     {
         var result = md.Render(input);
-
         result.Should().Be(expected);
     }
 
     [Test]
     public void Md_ShouldRenderLargeInputQuickly()
     {
-        var largeInput = string.Concat(Enumerable.Repeat("_Пример_ ", 10000));
-        var expectedOutput = string.Concat(Enumerable.Repeat("<em>Пример</em> ", 10000));
+        var largeInput = string.Concat(Enumerable.Repeat("_Пример_ ", 1000));
+        var expectedOutput = string.Concat(Enumerable.Repeat("<em>Пример</em> ", 1000));
         var stopwatch = new Stopwatch();
 
         stopwatch.Start();

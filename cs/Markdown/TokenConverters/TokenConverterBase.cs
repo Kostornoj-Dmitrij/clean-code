@@ -8,7 +8,7 @@ public abstract class TokenConverterBase : ITokenConverter
 {
     public abstract void Render(Token token, StringBuilder result);
 
-    protected void RenderChildren(Token token, StringBuilder result)
+    protected static void RenderChildren(Token token, StringBuilder result)
     {
         foreach (var child in token.Children)
         {

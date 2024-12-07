@@ -15,6 +15,8 @@ public class HtmlRenderer : IRenderer
             var converter = TokenConverterFactory.GetConverter(token.Type);
             converter.Render(token, result);
         }
-        return result.ToString();
+        var text = result.ToString();
+        text = TagReplacer.SimilarTagsNester(text);
+        return text;
     }
 }

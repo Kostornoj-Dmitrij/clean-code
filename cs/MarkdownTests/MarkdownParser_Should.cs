@@ -8,215 +8,251 @@ namespace MarkdownTests;
 [TestFixture]
 public class MarkdownParser_Should
 {
-    private MarkdownParser parser = new();
-    [Test]
-    public void MarkdownParser_ShouldParse_WhenItalicTag()
-    {
-        var tokens = parser
-            .ParseTokens("Это _курсив_ текст").ToList();
+    private readonly MarkdownParser parser = new ();
 
-        tokens.Should().HaveCount(3);
-        tokens[0].Type.Should().Be(TokenType.Text);
-        tokens[0].Content.Should().Be("Это ");
-        tokens[1].Type.Should().Be(TokenType.Emphasis);
-        tokens[1].Children[0].Content.Should().Be("курсив");
-        tokens[2].Type.Should().Be(TokenType.Text);
-        tokens[2].Content.Should().Be(" текст");
+    public static IEnumerable<TestCaseData> TokenParsingTestCases()
+    {
+        yield return new TestCaseData(
+            "Это _курсив_ текст",
+            new List<Token>
+            {
+                new (TokenType.Text, "Это "),
+                new (TokenType.Emphasis, children: new List<Token>
+                {
+                    new (TokenType.Text, "курсив")
+                }),
+                new (TokenType.Text, " текст")
+            }).SetName("ShouldParse_WhenItalicTag");
+
+        yield return new TestCaseData(
+            "Это __полужирный__ текст",
+            new List<Token>
+            {
+                new (TokenType.Text, "Это "),
+                new (TokenType.Strong, children: new List<Token>
+                {
+                    new (TokenType.Text, "полужирный")
+                }),
+                new (TokenType.Text, " текст")
+            }).SetName("ShouldParse_WhenStrongTag");
+
+        yield return new TestCaseData(
+            "# Заголовок",
+            new List<Token>
+            {
+                new (TokenType.Header, children: new List<Token>
+                {
+                    new (TokenType.Text, "Заголовок")
+                })
+            }).SetName("ShouldParse_WhenHeaderTag");
+
+        yield return new TestCaseData(
+            "Это __жирный _и курсивный_ текст__",
+            new List<Token>
+            {
+                new (TokenType.Text, "Это "),
+                new (TokenType.Strong, children: new List<Token>
+                {
+                    new (TokenType.Text, "жирный "),
+                    new (TokenType.Emphasis, children: new List<Token>
+                    {
+                        new (TokenType.Text, "и курсивный")
+                    }),
+                    new (TokenType.Text, " текст")
+                })
+            }).SetName("ShouldParse_WhenNestedItalicAndStrongTags");
+
+        yield return new TestCaseData(
+            "Это _курсив_,а это __жирный__ текст.",
+            new List<Token>
+            {
+                new (TokenType.Text, "Это "),
+                new (TokenType.Emphasis, children: new List<Token>
+                {
+                    new (TokenType.Text, "курсив")
+                }),
+                new (TokenType.Text, ",а это "),
+                new (TokenType.Strong, children: new List<Token>
+                {
+                    new (TokenType.Text, "жирный")
+                }),
+                new (TokenType.Text, " текст.")
+            }).SetName("ShouldParse_WhenMultipleTokensInLine");
+
+        yield return new TestCaseData(
+            "en_d._,mi__dd__le",
+            new List<Token>
+            {
+                new (TokenType.Text, "en"),
+                new (TokenType.Emphasis, children: new List<Token>
+                {
+                    new (TokenType.Text, "d.")
+                }),
+                new (TokenType.Text, ",mi"),
+                new (TokenType.Strong, children: new List<Token>
+                {
+                    new (TokenType.Text, "dd")
+                }),
+                new (TokenType.Text, "le")
+            }).SetName("ShouldParse_WhenBoundedTagsInOneWord");
+
+        yield return new TestCaseData(
+            @"Экранированный \_символ\_",
+            new List<Token>
+            {
+                new (TokenType.Text, "Экранированный _символ_")
+            }).SetName("ShouldParse_WhenEscapedTags");
+
+        yield return new TestCaseData(
+            "Это __двойное _и одинарное_ выделение__",
+            new List<Token>
+            {
+                new (TokenType.Text, "Это "),
+                new (TokenType.Strong, children: new List<Token>
+                {
+                    new (TokenType.Text, "двойное "),
+                    new (TokenType.Emphasis, children: new List<Token>
+                    {
+                        new (TokenType.Text, "и одинарное")
+                    }),
+                    new (TokenType.Text, " выделение")
+                })
+            }).SetName("ShouldParse_WhenItalicInStrong");
+
+        yield return new TestCaseData(
+            "# Заголовок __с _разными_ символами__",
+            new List<Token>
+            {
+                new (TokenType.Header, children: new List<Token>
+                {
+                    new (TokenType.Text, "Заголовок "),
+                    new (TokenType.Strong, children: new List<Token>
+                    {
+                        new (TokenType.Text, "с "),
+                        new (TokenType.Emphasis, children: new List<Token>
+                        {
+                            new (TokenType.Text, "разными")
+                        }),
+                        new (TokenType.Text, " символами")
+                    })
+                })
+            }).SetName("ShouldParse_WhenHeaderWithTags");
+
+        yield return new TestCaseData(
+            "# Заголовок 1\n# Заголовок 2",
+            new List<Token>
+            {
+                new (TokenType.Header, children: new List<Token>
+                {
+                    new (TokenType.Text, "Заголовок 1")
+                }),
+                new (TokenType.Text, "\n"),
+                new (TokenType.Header, children: new List<Token>
+                {
+                    new (TokenType.Text, "Заголовок 2")
+                })
+            }).SetName("ShouldParse_WhenMultipleHeaders");
+
+        yield return new TestCaseData(
+            "Если пустая _______ строка",
+            new List<Token>
+            {
+                new (TokenType.Text, "Если пустая _______ строка")
+            }).SetName("ShouldNotParse_WhenEmptyEmphasis");
+
+        yield return new TestCaseData(
+            "Текст с цифрами_12_3 не должен выделяться",
+            new List<Token>
+            {
+                new (TokenType.Text, "Текст с цифрами_12_3 не должен выделяться")
+            }).SetName("ShouldNotParse_WhenUnderscoresInNumbers");
+
+        yield return new TestCaseData(
+            @"Здесь сим\волы экранирования\ \должны остаться.\",
+            new List<Token>
+            {
+                new (TokenType.Text, @"Здесь сим\волы экранирования\ \должны остаться.\")
+            }).SetName("ShouldNotParse_WhenEscapingSymbols");
+
+        yield return new TestCaseData(
+            @"\\_вот это будет выделено тегом_",
+            new List<Token>
+            {
+                new (TokenType.Emphasis, children: new List<Token>
+                {
+                    new (TokenType.Text, "вот это будет выделено тегом")
+                })
+            }).SetName("ShouldNotParse_WhenEscapedYourself");
+
+        yield return new TestCaseData(
+            "и в нач_але_,и в сер__еди__не",
+            new List<Token>
+            {
+                new (TokenType.Text, "и в нач"),
+                new (TokenType.Emphasis, children: new List<Token>
+                {
+                    new (TokenType.Text, "але")
+                }),
+                new (TokenType.Text, ",и в сер"),
+                new (TokenType.Strong, children: new List<Token>
+                {
+                    new (TokenType.Text, "еди")
+                }),
+                new (TokenType.Text, "не")
+            }).SetName("ShouldParse_WhenTagsInSimilarWord");
+
+        yield return new TestCaseData(
+            "Это пер_вый в_торой пример.",
+            new List<Token>
+            {
+                new (TokenType.Text, "Это пер_вый в_торой пример.")
+            }).SetName("ShouldNotParse_WhenTagInDifferentWords");
+
+        yield return new TestCaseData(
+            "_e __e",
+            new List<Token>
+            {
+                new (TokenType.Text, "_e __e")
+            }).SetName("ShouldNotParse_WhenUnclosedTags");
+
+        yield return new TestCaseData(
+            "_e __s e_ s__",
+            new List<Token>
+            {
+                new (TokenType.Text, "_e __s e_ s__")
+            }).SetName("ShouldNotParse_WhenTagsIntersection");
+
+        yield return new TestCaseData(
+            "__s \n s__,_e \r\n e_",
+            new List<Token>
+            {
+                new (TokenType.Text, "__s \n s__,_e \r\n e_")
+            }).SetName("ShouldNotParse_WhenTagsIntersectionNewLines");
     }
 
-    [Test]
-    public void MarkdownParser_ShouldParse_WhenStrongTag()
+    [TestCaseSource(nameof(TokenParsingTestCases))]
+    public void MarkdownParser_ShouldParseTokens(string input, List<Token> expectedTokens)
     {
-        var tokens = parser
-            .ParseTokens("Это __полужирный__ текст").ToList();
-
-        tokens.Should().HaveCount(3);
-        tokens[0].Type.Should().Be(TokenType.Text);
-        tokens[0].Content.Should().Be("Это ");
-        tokens[1].Type.Should().Be(TokenType.Strong);
-        tokens[1].Children[0].Type.Should().Be(TokenType.Text);
-        tokens[1].Children[0].Content.Should().Be("полужирный");
-        tokens[2].Type.Should().Be(TokenType.Text);
-        tokens[2].Content.Should().Be(" текст");
+        var actualTokens = parser.ParseTokens(input).ToList();
+        CompareTokens(expectedTokens, actualTokens);
     }
 
-    [Test]
-    public void MarkdownParser_ShouldParse_WhenHeaderTag()
+    private void CompareTokens(IReadOnlyList<Token> expected, IReadOnlyList<Token> actual)
     {
-        var tokens = parser
-            .ParseTokens("# Заголовок").ToList();
+        actual.Should().HaveCount(expected.Count, "Количество токенов должно совпадать");
+        for (int i = 0; i < expected.Count; i++)
+        {
+            actual[i].Type.Should().Be(expected[i].Type, $"Тип токена на позиции {i} должен совпадать");
+            actual[i].Content.Should().Be(expected[i].Content, $"Содержимое токена на позиции {i} должно совпадать");
 
-        tokens.Should().HaveCount(1);
-        tokens[0].Type.Should().Be(TokenType.Header);
-        tokens[0].Children[0].Content.Should().Be("Заголовок");
-    }
-
-    [Test]
-    public void MarkdownParser_ShouldParse_WhenEscaping()
-    {
-        var tokens = parser
-            .ParseTokens(@"Экранированный \_символ\_").ToList();
-
-        tokens.Should().HaveCount(1);
-        tokens[0].Type.Should().Be(TokenType.Text);
-        tokens[0].Content.Should().Be("Экранированный _символ_");
-    }
-
-    [Test]
-    public void MarkdownParser_ShouldParse_WhenNestedItalicAndStrongTags()
-    {
-        var tokens = parser
-            .ParseTokens("Это __жирный _и курсивный_ текст__").ToList();
-
-        tokens.Should().HaveCount(2);
-        tokens[0].Type.Should().Be(TokenType.Text);
-        tokens[0].Content.Should().Be("Это ");
-        tokens[1].Type.Should().Be(TokenType.Strong);
-        tokens[1].Children.Should().HaveCount(3);
-        tokens[1].Children[0].Type.Should().Be(TokenType.Text);
-        tokens[1].Children[0].Content.Should().Be("жирный ");
-        tokens[1].Children[1].Type.Should().Be(TokenType.Emphasis);
-        tokens[1].Children[1].Children[0].Type.Should().Be(TokenType.Text);
-        tokens[1].Children[1].Children[0].Content.Should().Be("и курсивный");
-        tokens[1].Children[2].Type.Should().Be(TokenType.Text);
-        tokens[1].Children[2].Content.Should().Be(" текст");
-    }
-
-    [Test]
-    public void MarkdownParser_ShouldParse_WhenMultipleTokensInLine()
-    {
-        var tokens = parser
-            .ParseTokens("Это _курсив_, а это __жирный__ текст.").ToList();
-
-        tokens.Should().HaveCount(5);
-        tokens[0].Type.Should().Be(TokenType.Text);
-        tokens[0].Content.Should().Be("Это ");
-        tokens[1].Type.Should().Be(TokenType.Emphasis);
-        tokens[1].Children[0].Content.Should().Be("курсив");
-        tokens[2].Type.Should().Be(TokenType.Text);
-        tokens[2].Content.Should().Be(", а это ");
-        tokens[3].Type.Should().Be(TokenType.Strong);
-        tokens[3].Children[0].Content.Should().Be("жирный");
-        tokens[4].Type.Should().Be(TokenType.Text);
-        tokens[4].Content.Should().Be(" текст.");
-    }
-
-    [Test]
-    public void MarkdownParser_ShouldNotParse_WhenEscapingSymbols()
-    {
-        var tokens = parser
-            .ParseTokens(@"Здесь сим\волы экранирования\ \должны остаться.\").ToList();
-
-        tokens.Should().HaveCount(1);
-        tokens[0].Type.Should().Be(TokenType.Text);
-        tokens[0].Content.Should().Be(@"Здесь сим\волы экранирования\ \должны остаться.\");
-    }
-
-    [Test]
-    public void MarkdownParser_ShouldParse_WhenEscapedTags()
-    {
-        var tokens = parser
-            .ParseTokens(@"\\_вот это будет выделено тегом_").ToList();
-
-        tokens.Should().HaveCount(1);
-        tokens[0].Type.Should().Be(TokenType.Emphasis);
-        tokens[0].Children[0].Content.Should().Be("вот это будет выделено тегом");
-    }
-
-    [Test]
-    public void MarkdownParser_ShouldParse_WhenNestedItalicAndStrongCorrectly()
-    {
-        var tokens = parser
-            .ParseTokens("Это __двойное _и одинарное_ выделение__").ToList();
-
-        tokens.Should().HaveCount(2);
-        tokens[0].Type.Should().Be(TokenType.Text);
-        tokens[0].Content.Should().Be("Это ");
-        tokens[1].Type.Should().Be(TokenType.Strong);
-        tokens[1].Children.Should().HaveCount(3);
-        tokens[1].Children[0].Type.Should().Be(TokenType.Text);
-        tokens[1].Children[0].Content.Should().Be("двойное ");
-        tokens[1].Children[1].Type.Should().Be(TokenType.Emphasis);
-        tokens[1].Children[1].Children[0].Type.Should().Be(TokenType.Text);
-        tokens[1].Children[1].Children[0].Content.Should().Be("и одинарное");
-        tokens[1].Children[2].Type.Should().Be(TokenType.Text);
-        tokens[1].Children[2].Content.Should().Be(" выделение");
-    }
-
-    [Test]
-    public void MarkdownParser_ShouldParse_WhenHeaderWithTags()
-    {
-        var tokens = parser
-            .ParseTokens("# Заголовок __с _разными_ символами__").ToList();
-
-        tokens.Should().HaveCount(1);
-        tokens[0].Type.Should().Be(TokenType.Header);
-        tokens[0].Children.Should().HaveCount(2);
-        tokens[0].Children[0].Type.Should().Be(TokenType.Text);
-        tokens[0].Children[0].Content.Should().Be("Заголовок ");
-        tokens[0].Children[1].Type.Should().Be(TokenType.Strong);
-        tokens[0].Children[1].Children[0].Type.Should().Be(TokenType.Text);
-        tokens[0].Children[1].Children[0].Content.Should().Be("с ");
-        tokens[0].Children[1].Children[1].Children[0].Type.Should().Be(TokenType.Text);
-        tokens[0].Children[1].Children[1].Children[0].Content.Should().Be("разными");
-        tokens[0].Children[1].Children[2].Type.Should().Be(TokenType.Text);
-        tokens[0].Children[1].Children[2].Content.Should().Be(" символами");
-    }
-
-    [Test]
-    public void MarkdownParser_ShouldNotParse_WhenEmptyEmphasis()
-    {
-        var tokens = parser
-            .ParseTokens("Если пустая _______ строка").ToList();
-
-        tokens.Should().HaveCount(1);
-        tokens[0].Type.Should().Be(TokenType.Text);
-        tokens[0].Content.Should().Be("Если пустая _______ строка");
-    }
-
-    [Test]
-    public void MarkdownParser_ShouldParse_WhenMultipleHeaders()
-    {
-        var tokens = parser
-            .ParseTokens("# Заголовок 1\n# Заголовок 2").ToList();
-
-        tokens.Should().HaveCount(3);
-        tokens[0].Type.Should().Be(TokenType.Header);
-        tokens[0].Children[0].Content.Should().Be("Заголовок 1");
-        tokens[2].Type.Should().Be(TokenType.Header);
-        tokens[2].Children[0].Content.Should().Be("Заголовок 2");
-    }
-
-    [Test]
-    public void MarkdownParser_ShouldNotParse_WhenUnderscoresInNumbers()
-    {
-        var tokens = parser
-            .ParseTokens("Текст с цифрами_12_3 не должен выделяться").ToList();
-
-        tokens.Should().HaveCount(1);
-        tokens[0].Type.Should().Be(TokenType.Text);
-        tokens[0].Content.Should().Be("Текст с цифрами_12_3 не должен выделяться");
-    }
-
-    [Test]
-    public void MarkdownParser_ShouldNotParse_WhenTagsInWords()
-    {
-        var tokens = parser
-            .ParseTokens("и в _нач_але, и в сер_еди_не").ToList();
-
-        tokens.Should().HaveCount(1);
-        tokens[0].Type.Should().Be(TokenType.Text);
-        tokens[0].Content.Should().Be("и в _нач_але, и в сер_еди_не");
-    }
-
-    [Test]
-    public void MarkdownParser_ShouldNotParse_WhenDifferentWords()
-    {
-        var tokens = parser
-            .ParseTokens("Это пер_вый в_торой пример.").ToList();
-
-        tokens.Should().HaveCount(1);
-        tokens[0].Type.Should().Be(TokenType.Text);
-        tokens[0].Content.Should().Be("Это пер_вый в_торой пример.");
+            if (expected[i].Children.Any())
+            {
+                CompareTokens(expected[i].Children, actual[i].Children);
+            }
+            else
+            {
+                actual[i].Children.Should().BeNullOrEmpty($"Токен на позиции {i} не должен иметь дочерних элементов");
+            }
+        }
     }
 }

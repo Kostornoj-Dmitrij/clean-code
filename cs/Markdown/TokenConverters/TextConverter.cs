@@ -1,6 +1,5 @@
 using System.Text;
 using Markdown.Interfaces;
-using Markdown.Renderers;
 using Markdown.Tokens;
 
 namespace Markdown.TokenConverters;

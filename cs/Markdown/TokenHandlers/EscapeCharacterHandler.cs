@@ -1,6 +1,5 @@
 using Markdown.Interfaces;
 using Markdown.Parsers;
-using Markdown.Tokens;
 
 namespace Markdown.TokenHandlers;
 

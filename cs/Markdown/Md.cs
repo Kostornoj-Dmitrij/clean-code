@@ -1,6 +1,4 @@
 ﻿using Markdown.Interfaces;
-using Markdown.Parsers;
-using Markdown.Renderers;
 
 namespace Markdown;
 

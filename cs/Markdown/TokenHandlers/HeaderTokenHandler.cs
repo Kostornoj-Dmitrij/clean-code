@@ -7,7 +7,8 @@ namespace Markdown.TokenHandlers;
 public class HeaderTokenHandler : ITokenHandler
 {
     public bool CanHandle(char current, char next, MarkdownParseContext context) 
-        => current == '#' && (context.CurrentIndex == 0 || context.MarkdownText[context.CurrentIndex - 1] == '\n');
+        => current == '#' && (context.CurrentIndex == 0 || 
+                              context.MarkdownText[context.CurrentIndex - 1] == '\n');
 
     public void Handle(MarkdownParseContext context)
     {
@@ -35,7 +36,8 @@ public class HeaderTokenHandler : ITokenHandler
             if (headerEnd == -1)
                 headerEnd = context.MarkdownText.Length;
 
-            var headerContent = context.Parser.ParseTokens(context.MarkdownText[context.CurrentIndex..headerEnd]);
+            var headerContent = context.Parser
+                .ParseTokens(context.MarkdownText[context.CurrentIndex..headerEnd]);
 
             foreach (var childToken in headerContent)
             {
@@ -47,6 +49,5 @@ public class HeaderTokenHandler : ITokenHandler
         {
             context.Buffer.Append('#', context.HeaderLevel);
         }
-
     }
 }

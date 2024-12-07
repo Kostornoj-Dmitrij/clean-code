@@ -1,16 +1,17 @@
-using Markdown.Tokens;
 using System.Text;
 using Markdown.Interfaces;
+using Markdown.Tokens;
 
 namespace Markdown.Parsers;
 
 public class MarkdownParseContext
 {
-    public Stack<Token> Stack { get; set; } = new();
-    public List<Token> Tokens { get; set; } = new();
-    public StringBuilder Buffer { get; set; } = new();
-    public string MarkdownText { get; set; } = "";
+    public Stack<Token> Stack { get; } = new();
+    public StringBuilder Buffer { get; } = new();
+    public List<Token> Tokens { get; } = [];
+    public List<int> IntersectedIndexes { get; } = [];
+    public string MarkdownText { get; init; } = "";
     public int CurrentIndex { get; set; }
     public int HeaderLevel { get; set; }
-    public required IMarkdownParser Parser { get; set; }
+    public required IMarkdownParser Parser { get; init; }
 }

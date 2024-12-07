@@ -5,6 +5,19 @@ namespace Markdown.TokenConverters;
 
 public static class TokenConverterFactory
 {
+    private static readonly Dictionary<string, string> TagPairs;
+
+    static TokenConverterFactory()
+    {
+        TagPairs = new Dictionary<string, string>
+        {
+            { " </em>", " <em>" },
+            { "<em> ", "</em> " },
+            { " </strong>", " <strong>" },
+            { "<strong> ", "</strong> " }
+        };
+    }
+
     public static ITokenConverter GetConverter(TokenType type)
     {
         return type switch
@@ -15,5 +28,10 @@ public static class TokenConverterFactory
             TokenType.Header => new HeaderConverter(),
             _ => throw new ArgumentOutOfRangeException()
         };
+    }
+
+    public static Dictionary<string, string> GetTagPairs()
+    {
+        return TagPairs;
     }
 }

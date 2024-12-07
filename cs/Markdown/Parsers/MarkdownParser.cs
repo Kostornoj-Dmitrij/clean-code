@@ -6,24 +6,18 @@ namespace Markdown.Parsers;
 
 public class MarkdownParser : IMarkdownParser
 {
-    private readonly List<ITokenHandler> handlers;
+    private readonly List<ITokenHandler> handlers =
+    [
+        new StrongTokenHandler(),
+        new HeaderTokenHandler(),
+        new EmphasisTokenHandler(),
+        new NewLineHandler(),
+        new EscapeCharacterHandler()
+    ];
 
-    public MarkdownParser()
-    {
-        handlers = new List<ITokenHandler>
-        {
-            new StrongTokenHandler(),
-            new HeaderTokenHandler(),
-            new EmphasisTokenHandler(),
-            new NewLineHandler(),
-            new EscapeCharacterHandler()
-        };
-    }
-    
     public IEnumerable<Token> ParseTokens(string markdownText)
     {
-        if (markdownText == null) 
-            throw new ArgumentNullException(nameof(markdownText));
+        ArgumentNullException.ThrowIfNull(markdownText);
 
         var context = new MarkdownParseContext
         {
@@ -53,7 +47,7 @@ public class MarkdownParser : IMarkdownParser
         AddToken(context, TokenType.Text);
         return context.Tokens;
     }
-    
+
     public static void AddToken(MarkdownParseContext context, TokenType type)
     {
         if (context.Buffer.Length == 0) return;
