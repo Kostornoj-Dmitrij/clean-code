@@ -26,6 +26,7 @@ public static class TokenConverterFactory
             TokenType.Emphasis => new EmphasisConverter(),
             TokenType.Strong => new StrongConverter(),
             TokenType.Header => new HeaderConverter(),
+            TokenType.Link => new LinkConverter(),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
