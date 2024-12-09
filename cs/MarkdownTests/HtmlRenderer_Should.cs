@@ -154,4 +154,20 @@ public class HtmlRenderer_Should
         result.Should().Be("<h1><strong>полужирный заголовок</strong></h1>" +
                            "<strong>и <em>полужирный курсив</em></strong>");
     }
+
+    [Test]
+    public void Render_ShouldHandleLinkTags()
+    {
+        var tokens = new List<BaseToken>
+        {
+            new LinkToken(new List<BaseToken>
+            {
+                new (TokenType.Text, "Ссылка на Google")
+            }, "http://google.com")
+        };
+
+        var result = renderer.Render(tokens);
+
+        result.Should().Be("<a href=\"http://google.com\">Ссылка на Google</a>");
+    }
 }
