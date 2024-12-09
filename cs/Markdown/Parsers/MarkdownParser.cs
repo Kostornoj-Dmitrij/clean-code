@@ -12,7 +12,8 @@ public class MarkdownParser : IMarkdownParser
         new HeaderTokenHandler(),
         new EmphasisTokenHandler(),
         new NewLineHandler(),
-        new EscapeCharacterHandler()
+        new EscapeCharacterHandler(),
+        new LinkTokenHandler()
     ];
 
     public IEnumerable<BaseToken> ParseTokens(string markdownText)
