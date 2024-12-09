@@ -154,6 +154,107 @@ public class MarkdownParser_Should
             }).SetName("ShouldParse_WhenMultipleHeaders");
 
         yield return new TestCaseData(
+            "Это текст с [ссылкой](http://link.com)",
+            new List<BaseToken>
+            {
+                new (TokenType.Text, "Это текст с "),
+                new LinkToken(new List<BaseToken>
+                {
+                    new (TokenType.Text, "ссылкой")
+                }, "http://link.com")
+            }).SetName("ShouldParse_WhenSimpleLinkTag");
+
+        yield return new TestCaseData(
+            "Это текст с [двумя](http://link1.com) [ссылками](http://link2.com)",
+            new List<BaseToken>
+            {
+                new (TokenType.Text, "Это текст с "),
+                new LinkToken(new List<BaseToken>
+                {
+                    new (TokenType.Text, "двумя")
+                }, "http://link1.com"),
+                new (TokenType.Text, " "),
+                new LinkToken(new List<BaseToken>
+                {
+                    new (TokenType.Text, "ссылками")
+                }, "http://link2.com")
+            }).SetName("ShouldParse_WhenSeveralLinkTags");
+
+        yield return new TestCaseData(
+            "_[Ссылка](http://link.com) внутри курсива_",
+            new List<BaseToken>
+            {
+                new (TokenType.Emphasis, children: new List<BaseToken>
+                {
+                    new LinkToken(new List<BaseToken>
+                    {
+                        new (TokenType.Text, "Ссылка")
+                    }, "http://link.com"),
+                    new (TokenType.Text, " внутри курсива")
+                })
+            }).SetName("ShouldParse_WhenLinkInsideItalic");
+
+        yield return new TestCaseData(
+            "Это [ссылка с _тегом_](http://link.com)",
+            new List<BaseToken>
+            {
+                new (TokenType.Text, "Это "),
+                new LinkToken(new List<BaseToken>
+                {
+                    new (TokenType.Text, "ссылка с "),
+                    new (TokenType.Emphasis, children: new List<BaseToken>
+                    {
+                        new (TokenType.Text, "тегом")
+                    })
+                }, "http://link.com")
+            }).SetName("ShouldParse_WhenLinkWithTagInside");
+
+        yield return new TestCaseData(
+            "Пустая ссылка [](http://link.com)",
+            new List<BaseToken>
+            {
+                new (TokenType.Text, "Пустая ссылка "),
+                new LinkToken(new List<BaseToken>(), "http://link.com")
+            }).SetName("ShouldParse_WhenLinkWithEmptyText");
+
+        yield return new TestCaseData(
+            "Пустая ссылка []()",
+            new List<BaseToken>
+            {
+                new (TokenType.Text, "Пустая ссылка "),
+                new LinkToken(new List<BaseToken>(), "")
+            }).SetName("ShouldParse_WhenLinkWithEmptyUrl");
+
+        yield return new TestCaseData(
+            @"[Ссылка с экранированными \] символами\]](http://link.com)",
+            new List<BaseToken>
+            {
+                new LinkToken(new List<BaseToken>
+                {
+                    new (TokenType.Text, "Ссылка с экранированными ] символами]")
+                }, "http://link.com")
+            }).SetName("ShouldParse_WhenLinkWithEscapedSymbol");
+
+        yield return new TestCaseData(
+            "Это [ссылка с [ссылка с _тегом_](http://link.com)](http://link.com)",
+            new List<BaseToken>
+            {
+                new (TokenType.Text, "Это "),
+                new LinkToken(new List<BaseToken>
+                {
+                    new (TokenType.Text, "ссылка с "),
+                    new LinkToken(new List<BaseToken>
+                    {
+                        new (TokenType.Text, "ссылка с "),
+                        new (TokenType.Emphasis, children: new List<BaseToken>
+                        {
+                            new (TokenType.Text, "тегом")
+                        })
+                    }, "http://link.com")
+                }, "http://link.com")
+            }).SetName("ShouldParse_WhenLinkInsideLink");
+
+        yield return new TestCaseData(
             "Если пустая _______ строка",
             new List<BaseToken>
             {
@@ -228,6 +329,14 @@ public class MarkdownParser_Should
             {
                 new (TokenType.Text, "__s \n s__,_e \r\n e_")
             }).SetName("ShouldNotParse_WhenTagsIntersectionNewLines");
+
+        yield return new TestCaseData(
+            "Текст с [незавершённой ссылкой](http://link.com",
+            new List<BaseToken>
+            {
+                new (TokenType.Text, "Текст с "),
+                new (TokenType.Text, "[незавершённой ссылкой](http://link.com")
+            }).SetName("ShouldNotParse_WhenUnfinishedLinkTag");
     }
 
     [TestCaseSource(nameof(TokenParsingTestCases))]

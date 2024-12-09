@@ -63,6 +63,12 @@ public class Md_Should
     [TestCase("Текст с цифрами_12_3 не должен выделяться", 
         "Текст с цифрами_12_3 не должен выделяться", 
         TestName = "UnderscoreInNumbers")]
+    [TestCase("Текст с [незавершённой ссылкой](http://link.com", 
+        "Текст с [незавершённой ссылкой](http://link.com", 
+        TestName = "UnfinishedUrlInLinkTag")]
+    [TestCase("Текст с [незавершённой ссылкой(http://link.com)", 
+        "Текст с [незавершённой ссылкой(http://link.com)", 
+        TestName = "UnfinishedTextInLinkTag")]
     public void Md_ShouldNotRender_When(string input, string expected)
     {
         var result = md.Render(input);
@@ -108,6 +114,39 @@ public class Md_Should
     [TestCase("en_d._, mi__dd__le, _sta_rt", 
         "en<em>d.</em>, mi<strong>dd</strong>le, <em>sta</em>rt", 
         TestName = "BoundedTagsInOneWord")]
+    [TestCase("Это текст с [ссылкой](http://link.com)", 
+        @"Это текст с <a href=""http://link.com"">ссылкой</a>", 
+        TestName = "SimpleLinkTag")]
+    [TestCase("Это текст с [двумя](http://link1.com) [ссылками](http://link2.com)", 
+        @"Это текст с <a href=""http://link1.com"">двумя</a> <a href=""http://link2.com"">ссылками</a>", 
+        TestName = "SeveralLinkTags")]
+    [TestCase("_[Ссылка](http://link.com) внутри курсива_", 
+        @"<em><a href=""http://link.com"">Ссылка</a> внутри курсива</em>", 
+        TestName = "LinkInsideItalic")]
+    [TestCase("__[Ссылка](http://link.com) внутри полужирного__", 
+        @"<strong><a href=""http://link.com"">Ссылка</a> внутри полужирного</strong>", 
+        TestName = "LinkInsideStrong")]
+    [TestCase("# [Ссылка](http://link.com)", 
+        @"<h1><a href=""http://link.com"">Ссылка</a></h1>", 
+        TestName = "LinkInsideHeader")]
+    [TestCase("# h __E _e_ [ссылка](http://link.com) E__ _e_", 
+        @"<h1>h <strong>E <em>e</em> <a href=""http://link.com"">ссылка</a> E</strong> <em>e</em></h1>", 
+        TestName = "NestedTagsWithLink")]
+    [TestCase("Это [ссылка с _тегом_](http://link.com)", 
+        @"Это <a href=""http://link.com"">ссылка с <em>тегом</em></a>", 
+        TestName = "LinkWithTagInside")]
+    [TestCase("Пустая ссылка [](http://link.com)", 
+        @"Пустая ссылка <a href=""http://link.com""></a>", 
+        TestName = "LinkWithEmptyText")]
+    [TestCase("Пустая ссылка []()", 
+        @"Пустая ссылка <a href=""""></a>", 
+        TestName = "LinkWithEmptyUrl")]
+    [TestCase(@"[Ссылка с экранированными \] символами\]](http://link.com)", 
+        @"<a href=""http://link.com"">Ссылка с экранированными ] символами]</a>", 
+        TestName = "LinkWithEscapedSymbol")]
+    [TestCase("Это [ссылка с [ссылка с _тегом_](http://link.com)](http://link.com)", 
+        @"Это <a href=""http://link.com"">ссылка с <a href=""http://link.com"">ссылка с <em>тегом</em></a></a>", 
+        TestName = "LinkInsideLink")]
     public void Md_ShouldRender_When(string input, string expected)
     {
         var result = md.Render(input);
