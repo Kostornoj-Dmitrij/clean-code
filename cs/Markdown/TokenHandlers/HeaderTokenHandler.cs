@@ -25,7 +25,7 @@ public class HeaderTokenHandler : ITokenHandler
             context.CurrentIndex++;
 
             MarkdownParser.AddToken(context, TokenType.Text);
-            var headerToken = new Token(TokenType.Header)
+            var headerToken = new BaseToken(TokenType.Header)
             {
                 HeaderLevel = context.HeaderLevel
             };

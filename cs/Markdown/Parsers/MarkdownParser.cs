@@ -15,7 +15,7 @@ public class MarkdownParser : IMarkdownParser
         new EscapeCharacterHandler()
     ];
 
-    public IEnumerable<Token> ParseTokens(string markdownText)
+    public IEnumerable<BaseToken> ParseTokens(string markdownText)
     {
         ArgumentNullException.ThrowIfNull(markdownText);
 
@@ -51,7 +51,7 @@ public class MarkdownParser : IMarkdownParser
     public static void AddToken(MarkdownParseContext context, TokenType type)
     {
         if (context.Buffer.Length == 0) return;
-        var token = new Token(type, context.Buffer.ToString());
+        var token = new BaseToken(type, context.Buffer.ToString());
         context.Buffer.Clear();
 
         if (context.Stack.Count > 0)

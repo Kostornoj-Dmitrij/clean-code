@@ -5,5 +5,5 @@ namespace Markdown.Interfaces;
 
 public interface ITokenConverter
 {
-    void Render(Token token, StringBuilder result);
+    void Render(BaseToken baseToken, StringBuilder result);
 }

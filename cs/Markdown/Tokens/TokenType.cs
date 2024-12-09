@@ -5,5 +5,6 @@ public enum TokenType
     Text,
     Emphasis,
     Strong,
-    Header
+    Header,
+    Link
 }

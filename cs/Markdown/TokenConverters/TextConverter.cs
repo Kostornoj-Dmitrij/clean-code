@@ -6,8 +6,8 @@ namespace Markdown.TokenConverters;
 
 public class TextConverter : ITokenConverter
 {
-    public void Render(Token token, StringBuilder result)
+    public void Render(BaseToken baseToken, StringBuilder result)
     {
-        result.Append(token.Content);
+        result.Append(baseToken.Content);
     }
 }

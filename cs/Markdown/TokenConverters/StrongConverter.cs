@@ -5,10 +5,10 @@ namespace Markdown.TokenConverters;
 
 public class StrongConverter : TokenConverterBase
 {
-    public override void Render(Token token, StringBuilder result)
+    public override void Render(BaseToken baseToken, StringBuilder result)
     {
         result.Append("<strong>");
-        RenderChildren(token, result);
+        RenderChildren(baseToken, result);
         result.Append("</strong>");
     }
 }

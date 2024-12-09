@@ -5,11 +5,11 @@ namespace Markdown.TokenConverters;
 
 public class HeaderConverter : TokenConverterBase
 {
-    public override void Render(Token token, StringBuilder result)
+    public override void Render(BaseToken baseToken, StringBuilder result)
     {
-        var level = token.HeaderLevel;
+        var level = baseToken.HeaderLevel;
         result.Append($"<h{level}>");
-        RenderChildren(token, result);
+        RenderChildren(baseToken, result);
         result.Append($"</h{level}>");
     }
 }

@@ -7,7 +7,7 @@ namespace Markdown.Renderers;
 
 public class HtmlRenderer : IRenderer
 {
-    public string Render(IEnumerable<Token> tokens)
+    public string Render(IEnumerable<BaseToken> tokens)
     {
         var result = new StringBuilder();
         foreach (var token in tokens)

@@ -126,7 +126,7 @@ public abstract class BoundaryTokenHandler : ITokenHandler
         }
         else
         {
-            var newToken = new Token(TokenType);
+            var newToken = new BaseToken(TokenType);
             context.Stack.Push(newToken);
         }
 

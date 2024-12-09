@@ -6,11 +6,11 @@ namespace Markdown.TokenConverters;
 
 public abstract class TokenConverterBase : ITokenConverter
 {
-    public abstract void Render(Token token, StringBuilder result);
+    public abstract void Render(BaseToken baseToken, StringBuilder result);
 
-    protected static void RenderChildren(Token token, StringBuilder result)
+    protected static void RenderChildren(BaseToken baseToken, StringBuilder result)
     {
-        foreach (var child in token.Children)
+        foreach (var child in baseToken.Children)
         {
             var converter = TokenConverterFactory.GetConverter(child.Type);
             converter.Render(child, result);
